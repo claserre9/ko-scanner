@@ -1,0 +1,1 @@
+declare var $0: HTMLElement;
