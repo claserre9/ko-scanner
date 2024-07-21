@@ -1,3 +1,7 @@
+/**
+ * Retrieves data and context for a Knockout.js view model.
+ * @returns {object} Object containing the view model data and context.
+ */
 const getKODataAndContext = function () {
     if ((window as any).ko) {
         let data = (window as any).ko && ($0 as any) ? (ko as any).dataFor($0) : {};
