@@ -1,38 +1,55 @@
 const path = require('path');
 const TerserPlugin = require('terser-webpack-plugin');
-const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = (env, argv) => {
 	const isProduction = argv.mode === 'production';
 
 	return {
-		entry:        {
+		entry: {
 			devtools: './src/devtools.ts',
+			panel: './src/panel.ts',
 		},
-		output:       {
-			path:     path.resolve(__dirname, 'dist'),
+		output: {
+			path: path.resolve(__dirname, 'dist'),
 			filename: '[name].js',
 		},
-		resolve:      {
+		resolve: {
 			extensions: ['.ts', '.js'],
 		},
-		module:       {
+		module: {
 			rules: [
 				{
-					test:    /\.ts$/,
-					use:     'ts-loader',
+					test: /\.ts$/,
+					use: 'ts-loader',
 					exclude: /node_modules/,
 				},
 			],
 		},
-		plugins:      [
+		plugins: [
 			new CleanWebpackPlugin(),
 		],
-		devtool:      isProduction ? false : 'source-map',
-		mode:         argv.mode,
+		devtool: isProduction ? false : 'source-map',
+		mode: argv.mode,
 		optimization: {
-			minimize:  isProduction,
-			minimizer: [new TerserPlugin()],
+			minimize: isProduction,
+			minimizer: [
+				new TerserPlugin({
+					terserOptions: {
+						format: {
+							comments: false,
+						},
+						compress: {
+							drop_console: false,
+							drop_debugger: true,
+							passes: 3,
+							pure_funcs: ["console.log"],
+						},
+						mangle: true,
+					},
+					extractComments: false,
+				})
+			]
 		},
 	};
 };

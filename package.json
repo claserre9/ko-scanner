@@ -1,13 +1,13 @@
 {
   "name": "ko-scanner",
   "version": "1.0.0",
-  "description": "",
+  "description": "Uses the devtools API to add a sidebar that displays the Knockout data associated with the selected DOM element.",
   "scripts": {
     "build": "webpack --mode production",
     "watch": "webpack --mode development --watch"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["knockout", "devtools"],
+  "author": "Clifford Laserre",
   "license": "ISC",
   "devDependencies": {
     "@types/chrome": "^0.0.268",

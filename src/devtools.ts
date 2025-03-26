@@ -1,37 +1,4 @@
-/**
- * Retrieves data and context for a Knockout.js view model.
- * @returns {object} Object containing the view model data and context.
- */
-const getKODataAndContext = function () {
-    if ((window as any).ko) {
-        let data = (window as any).ko && ($0 as any) ? (ko as any).dataFor($0) : {};
-        let context = (window as any).ko && ($0 as any) ? (ko as any).contextFor($0) : {};
-
-        if (data === null || data === undefined) {
-            data = {};
-        }
-
-        if (context === null || context === undefined) {
-            context = {};
-        }
-
-        let dataProps = Object.getOwnPropertyNames(data);
-        let contextProps = Object.getOwnPropertyNames(context);
-        let _data: { [key: string]: any } = Object.create(null);
-        let _context: { [key: string]: any } = Object.create(null);
-
-        for (let i = 0; i < dataProps.length; ++i) {
-            _data[dataProps[i]] = data[dataProps[i]];
-        }
-
-        for (let i = 0; i < contextProps.length; ++i) {
-            _context[contextProps[i]] = context[contextProps[i]];
-        }
-
-        return { viewModel: _data, context: _context };
-    }
-    return { viewModel: {}, context: {} };
-};
+import { getKODataAndContext } from './core';
 
 chrome.devtools.panels.elements.createSidebarPane(
     'KnockoutJS Context',
@@ -47,5 +14,14 @@ chrome.devtools.panels.elements.createSidebarPane(
         chrome.devtools.panels.elements.onSelectionChanged.addListener(
             updateElementProperties
         );
+    }
+);
+
+chrome.devtools.panels.create(
+    'KnockoutJS Editor',
+    "",
+    'panel/panel.html',
+    function (panel) {
+
     }
 );
