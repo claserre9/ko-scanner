@@ -22,14 +22,14 @@ This document contains a prioritized list of tasks for improving the KnockoutJS 
 
 ## Testing
 
-7. [ ] Set up a testing framework (Jest or similar)
-   - [ ] Configure TypeScript for testing
-   - [ ] Add npm scripts for running tests
-8. [ ] Implement unit tests for core functionality
-   - [ ] Test getKODataAndContext function
-   - [ ] Test getKOObservables function
-9. [ ] Implement integration tests for DevTools integration
-10. [ ] Set up continuous integration (CI) for automated testing
+7. [x] Set up a testing framework (Jest or similar)
+   - [x] Configure TypeScript for testing
+   - [x] Add npm scripts for running tests
+8. [x] Implement unit tests for core functionality
+   - [x] Test getKODataAndContext function
+   - [x] Test getKOObservables function
+9. [x] Implement integration tests for DevTools integration
+10. [x] Set up continuous integration (CI) for automated testing
 
 ## Features and Functionality
 
