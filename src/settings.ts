@@ -6,16 +6,19 @@
 export interface Settings {
   // UI Theme
   theme: 'light' | 'dark' | 'system';
-  
+
   // Data display format
   dataFormat: 'compact' | 'pretty';
-  
+
   // Show types
   showTypes: boolean;
-  
+
   // Auto-refresh
   autoRefresh: boolean;
-  
+
+  // Real-time monitoring of observable changes
+  realTimeMonitoring: boolean;
+
   // Locale
   locale: string;
 }
@@ -26,6 +29,7 @@ export const defaultSettings: Settings = {
   dataFormat: 'pretty',
   showTypes: true,
   autoRefresh: true,
+  realTimeMonitoring: true,
   locale: 'en'
 };
 
@@ -76,17 +80,17 @@ export function updateSetting<K extends keyof Settings>(key: K, value: Settings[
 export function applyTheme(theme: Settings['theme']): void {
   // Remove any existing theme classes
   document.body.classList.remove('theme-light', 'theme-dark');
-  
+
   let themeToApply = theme;
-  
+
   // If system theme, detect from browser
   if (theme === 'system') {
     themeToApply = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
-  
+
   // Apply the theme class
   document.body.classList.add(`theme-${themeToApply}`);
-  
+
   // Set CSS variables based on theme
   if (themeToApply === 'dark') {
     document.documentElement.style.setProperty('--background-color', '#1e1e1e');

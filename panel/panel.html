@@ -98,6 +98,13 @@
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
+    .observable-item.highlighted {
+      border-left: 4px solid var(--primary-color);
+      background-color: rgba(52, 152, 219, 0.1);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
     .observable-name {
       font-weight: bold;
       font-size: 1.1rem;
@@ -107,6 +114,39 @@
 
     .observable-property {
       margin-bottom: 5px;
+    }
+
+    /* Dependencies styling */
+    .observable-dependencies {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background-color: var(--code-bg-color);
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+
+    .dependencies-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: var(--text-color);
+    }
+
+    .dependencies-list {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .dependency-item {
+      margin-bottom: 3px;
+    }
+
+    .dependency-item a {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+
+    .dependency-item a:hover {
+      text-decoration: underline;
     }
 
     code {
@@ -244,6 +284,286 @@
       color: white;
     }
 
+    /* Editable values styling */
+    .editable-value {
+      padding: 4px 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.9rem;
+      background-color: var(--code-bg-color);
+      width: auto;
+      min-width: 100px;
+    }
+
+    .editable-value:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+
+    .edit-button {
+      margin-left: 8px;
+      padding: 2px 8px;
+      background-color: var(--button-bg-color);
+      color: var(--button-text-color);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .edit-button:hover {
+      background-color: var(--button-hover-bg-color);
+    }
+
+    /* Modal dialog for array editing */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-container {
+      background-color: white;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      width: 80%;
+      max-width: 600px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-color);
+      padding: 0;
+      line-height: 1;
+    }
+
+    .modal-content {
+      padding: 15px;
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+
+    .array-editor {
+      width: 100%;
+      height: 200px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.9rem;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      resize: vertical;
+    }
+
+    .modal-footer {
+      padding: 15px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .modal-button {
+      padding: 8px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      background-color: white;
+      cursor: pointer;
+    }
+
+    .modal-button.primary {
+      background-color: var(--button-bg-color);
+      color: var(--button-text-color);
+      border: none;
+    }
+
+    .modal-button.primary:hover {
+      background-color: var(--button-hover-bg-color);
+    }
+
+    /* Search and filter styling */
+    .search-container {
+      display: flex;
+      margin-bottom: 15px;
+      gap: 10px;
+    }
+
+    .search-input {
+      flex-grow: 1;
+      padding: 8px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+
+    .filter-select {
+      padding: 8px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      background-color: white;
+      font-size: 14px;
+      min-width: 150px;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+
+    /* Message styling */
+    .message {
+      padding: 15px;
+      background-color: white;
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .message.success {
+      background-color: var(--success-color);
+      color: white;
+    }
+
+    .message.error {
+      background-color: #e74c3c;
+      color: white;
+    }
+
+    /* Tab navigation */
+    .tab-navigation {
+      display: flex;
+      background-color: var(--header-bg-color);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .tab-button {
+      padding: 12px 20px;
+      background: transparent;
+      border: none;
+      color: var(--header-text-color);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: border-color 0.2s;
+    }
+
+    .tab-button:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .tab-button.active {
+      border-bottom-color: var(--primary-color);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Performance monitoring */
+    .performance-controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .button {
+      padding: 8px 16px;
+      background-color: var(--button-bg-color);
+      color: var(--button-text-color);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
+
+    .button:hover {
+      background-color: var(--button-hover-bg-color);
+    }
+
+    .button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    .performance-metrics {
+      margin-top: 20px;
+    }
+
+    .performance-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    .performance-table th,
+    .performance-table td {
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .performance-table th {
+      background-color: var(--code-bg-color);
+      font-weight: 500;
+    }
+
+    .performance-table tr:hover {
+      background-color: var(--hover-color);
+    }
+
+    .performance-table .slow {
+      color: #e74c3c;
+    }
+
+    .performance-table .medium {
+      color: #f39c12;
+    }
+
+    .performance-table .fast {
+      color: #2ecc71;
+    }
+
     /* Responsive design */
     @media (max-width: 768px) {
       header {
@@ -258,6 +578,10 @@
       .container {
         padding: 10px;
       }
+
+      .modal-container {
+        width: 95%;
+      }
     }
   </style>
 </head>
@@ -266,8 +590,35 @@
     <h2>Knockout Observables</h2>
     <button id="settingsButton" class="settings-button" title="Settings">⚙️</button>
   </header>
-  <div class="container">
-    <div id="observableList" class="message">Loading...</div>
+  <div class="tab-navigation">
+    <button id="observablesTabButton" class="tab-button active">Observables</button>
+    <button id="performanceTabButton" class="tab-button">Performance</button>
+  </div>
+  <div id="observablesTab" class="tab-content active">
+    <div class="container">
+      <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search observables..." class="search-input">
+        <select id="filterTypeSelect" class="filter-select">
+          <option value="all">All types</option>
+          <option value="observable">Observable</option>
+          <option value="observableArray">Observable Array</option>
+          <option value="computed">Computed</option>
+        </select>
+      </div>
+      <div id="observableList" class="message">Loading...</div>
+    </div>
+  </div>
+  <div id="performanceTab" class="tab-content">
+    <div class="container">
+      <div class="performance-controls">
+        <button id="startPerformanceMonitoring" class="button">Start Monitoring</button>
+        <button id="stopPerformanceMonitoring" class="button" disabled>Stop Monitoring</button>
+        <button id="clearPerformanceMetrics" class="button" disabled>Clear Metrics</button>
+      </div>
+      <div id="performanceMetrics" class="performance-metrics">
+        <div class="message">Performance monitoring not started</div>
+      </div>
+    </div>
   </div>
 
   <!-- Settings Panel -->
@@ -310,6 +661,12 @@
         <label class="checkbox-label">
           <input type="checkbox" id="autoRefreshCheckbox">
           <span id="autoRefreshLabel">Auto-refresh</span>
+        </label>
+      </div>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="realTimeMonitoringCheckbox">
+          <span id="realTimeMonitoringLabel">Real-time monitoring</span>
         </label>
       </div>
     </div>
