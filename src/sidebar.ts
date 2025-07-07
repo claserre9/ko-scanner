@@ -53,8 +53,18 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             const targetId = btn.getAttribute('data-target');
             const target = targetId ? document.getElementById(targetId) : null;
-            if (target) {
-                navigator.clipboard.writeText(target.textContent || '');
+            if (target && navigator.clipboard) {
+                navigator.clipboard.writeText(target.textContent || '')
+                    .then(() => {
+                        const original = btn.textContent;
+                        btn.textContent = 'Copied!';
+                        setTimeout(() => {
+                            if (original) {
+                                btn.textContent = original;
+                            }
+                        }, 1000);
+                    })
+                    .catch((err) => console.error('Failed to copy text:', err));
             }
         });
     });
