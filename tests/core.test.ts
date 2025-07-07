@@ -1,4 +1,4 @@
-import { getKODataAndContext, getKOObservables, KnockoutViewModelResult, KOTrackedProperty } from '../src/core';
+import { getKODataAndContext, getKOObservables, getKOViewModelNames, KnockoutViewModelResult, KOTrackedProperty } from '../src/core';
 
 describe('getKODataAndContext', () => {
   beforeEach(() => {
@@ -149,5 +149,42 @@ describe('getKOObservables', () => {
     
     // Check that the regular property is not included
     expect(result.find(prop => prop.name === 'regularProp')).toBeUndefined();
+  });
+
+  describe('getKOViewModelNames', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    test('should return empty array when ko is not available', () => {
+      Object.defineProperty(window, 'ko', { value: undefined });
+      const result = getKOViewModelNames();
+      expect(result).toEqual([]);
+    });
+
+    test('should return unique constructor names', () => {
+      const vm1 = function VM1() {};
+      const vm2 = function VM2() {};
+      const instance1 = new (vm1 as any)();
+      const instance2 = new (vm2 as any)();
+      const instance3 = new (vm1 as any)();
+
+      Object.defineProperty(window, 'ko', {
+        value: {
+          dataFor: jest.fn().mockImplementation(el => {
+            if (el.id === 'el1') return instance1;
+            if (el.id === 'el2') return instance2;
+            if (el.id === 'el3') return instance3;
+            return null;
+          }),
+        },
+        writable: true,
+      });
+
+      document.body.innerHTML = '<div id="el1"></div><div id="el2"></div><div id="el3"></div>';
+
+      const result = getKOViewModelNames();
+      expect(result).toEqual(['VM1', 'VM2']);
+    });
   });
 });
