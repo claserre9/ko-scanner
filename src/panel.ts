@@ -747,9 +747,134 @@ function showArrayEditor(propertyName: string, arrayValue: any[]): void {
 	footer.appendChild(saveButton);
 }
 
+/**
+ * Switch between tabs in the panel
+ */
+function setupTabs(): void {
+        const observablesTabButton = document.getElementById('observablesTabButton');
+        const performanceTabButton = document.getElementById('performanceTabButton');
+        const observablesTab = document.getElementById('observablesTab');
+        const performanceTab = document.getElementById('performanceTab');
+
+        if (observablesTabButton && performanceTabButton && observablesTab && performanceTab) {
+                observablesTabButton.addEventListener('click', () => {
+                        observablesTabButton.classList.add('active');
+                        performanceTabButton.classList.remove('active');
+                        observablesTab.classList.add('active');
+                        performanceTab.classList.remove('active');
+                });
+
+                performanceTabButton.addEventListener('click', () => {
+                        performanceTabButton.classList.add('active');
+                        observablesTabButton.classList.remove('active');
+                        performanceTab.classList.add('active');
+                        observablesTab.classList.remove('active');
+                });
+        }
+}
+
+let performanceIntervalId: number | null = null;
+
+function renderPerformanceMetrics(metrics: KOPerformanceMetrics[]): void {
+        const container = document.getElementById('performanceMetrics')!;
+        container.innerHTML = '';
+
+        if (metrics.length === 0) {
+                const message = document.createElement('div');
+                message.className = 'message';
+                message.textContent = 'No metrics recorded';
+                container.appendChild(message);
+                return;
+        }
+
+        const table = document.createElement('table');
+        table.className = 'performance-table';
+        table.innerHTML = `<thead><tr><th>Name</th><th>Type</th><th>Count</th><th>Last (ms)</th><th>Avg (ms)</th></tr></thead>`;
+        const tbody = document.createElement('tbody');
+        for (const m of metrics) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${m.name}</td><td>${m.type}</td><td>${m.evaluationCount}</td><td>${m.lastEvaluationTime.toFixed(2)}</td><td>${m.averageEvaluationTime.toFixed(2)}</td>`;
+                tbody.appendChild(row);
+        }
+        table.appendChild(tbody);
+        container.appendChild(table);
+}
+
+function updatePerformanceMetrics(): void {
+        chrome.devtools.inspectedWindow.eval(
+                `window.__koPerfMon ? window.__koPerfMon.getMetrics() : []`,
+                (result: KOPerformanceMetrics[] | undefined, exceptionInfo) => {
+                        if (!exceptionInfo && result) {
+                                renderPerformanceMetrics(result);
+                        }
+                }
+        );
+}
+
+function startPerformanceMonitoringHandler(): void {
+        chrome.devtools.inspectedWindow.eval(
+                `window.__koPerfMon = (${monitorKOPerformance.toString()})();`,
+                (result, exceptionInfo) => {
+                        if (exceptionInfo) {
+                                console.error('Error starting performance monitoring:', exceptionInfo);
+                                return;
+                        }
+                        const startBtn = document.getElementById('startPerformanceMonitoring') as HTMLButtonElement;
+                        const stopBtn = document.getElementById('stopPerformanceMonitoring') as HTMLButtonElement;
+                        const clearBtn = document.getElementById('clearPerformanceMetrics') as HTMLButtonElement;
+                        if (startBtn) startBtn.disabled = true;
+                        if (stopBtn) stopBtn.disabled = false;
+                        if (clearBtn) clearBtn.disabled = false;
+
+                        updatePerformanceMetrics();
+                        performanceIntervalId = window.setInterval(updatePerformanceMetrics, 1000);
+                }
+        );
+}
+
+function stopPerformanceMonitoringHandler(): void {
+        chrome.devtools.inspectedWindow.eval(
+                `if (window.__koPerfMon){window.__koPerfMon.stopMonitoring();delete window.__koPerfMon;}`,
+                () => {}
+        );
+
+        if (performanceIntervalId) {
+                clearInterval(performanceIntervalId);
+                performanceIntervalId = null;
+        }
+
+        const startBtn = document.getElementById('startPerformanceMonitoring') as HTMLButtonElement;
+        const stopBtn = document.getElementById('stopPerformanceMonitoring') as HTMLButtonElement;
+        if (startBtn) startBtn.disabled = false;
+        if (stopBtn) stopBtn.disabled = true;
+}
+
+function clearPerformanceMetricsHandler(): void {
+        const clearBtn = document.getElementById('clearPerformanceMetrics') as HTMLButtonElement;
+        if (clearBtn) clearBtn.disabled = true;
+        const container = document.getElementById('performanceMetrics');
+        if (container) {
+                container.innerHTML = '<div class="message">Performance monitoring not started</div>';
+        }
+}
+
+function setupPerformanceMonitoring(): void {
+        const startBtn = document.getElementById('startPerformanceMonitoring');
+        const stopBtn = document.getElementById('stopPerformanceMonitoring');
+        const clearBtn = document.getElementById('clearPerformanceMetrics');
+
+        if (startBtn && stopBtn && clearBtn) {
+                startBtn.addEventListener('click', startPerformanceMonitoringHandler);
+                stopBtn.addEventListener('click', stopPerformanceMonitoringHandler);
+                clearBtn.addEventListener('click', clearPerformanceMetricsHandler);
+        }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-	initializeUI();
-	fetchAndRender();
+        initializeUI();
+        setupTabs();
+        setupPerformanceMonitoring();
+        fetchAndRender();
 
 	// Listen for selection changes
 	chrome.devtools.panels.elements.onSelectionChanged.addListener(

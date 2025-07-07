@@ -100,6 +100,7 @@ export function applyTheme(theme: Settings['theme']): void {
     document.documentElement.style.setProperty('--hover-color', '#333');
     document.documentElement.style.setProperty('--header-bg-color', '#1a1a1a');
     document.documentElement.style.setProperty('--header-text-color', '#f0f0f0');
+    document.documentElement.style.setProperty('--settings-bg-color', '#2b2b2b');
   } else {
     document.documentElement.style.setProperty('--background-color', '#f9f9f9');
     document.documentElement.style.setProperty('--text-color', '#333');
@@ -108,6 +109,7 @@ export function applyTheme(theme: Settings['theme']): void {
     document.documentElement.style.setProperty('--hover-color', '#f5f5f5');
     document.documentElement.style.setProperty('--header-bg-color', '#2c3e50');
     document.documentElement.style.setProperty('--header-text-color', 'white');
+    document.documentElement.style.setProperty('--settings-bg-color', 'white');
   }
 }
 

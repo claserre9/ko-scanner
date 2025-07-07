@@ -58,7 +58,7 @@ describe('getKOObservables', () => {
     jest.clearAllMocks();
   });
 
-  test('should return empty array when ko or $0 is not available', () => {
+  test('should return empty array when ko is not available', () => {
     // Mock window.ko as undefined
     Object.defineProperty(window, 'ko', { value: undefined });
     
@@ -67,17 +67,17 @@ describe('getKOObservables', () => {
     expect(result).toEqual([]);
   });
 
-  test('should return empty array when data is not available', () => {
-    // Mock ko.dataFor to return null
+  test('should return empty array when no elements have data', () => {
     Object.defineProperty(window, 'ko', {
       value: {
         dataFor: jest.fn().mockReturnValue(null),
+        isObservable: jest.fn(),
+        isComputed: jest.fn(),
       },
       writable: true,
     });
-    
+    document.body.innerHTML = '<div></div>';
     const result = getKOObservables();
-    
     expect(result).toEqual([]);
   });
 
@@ -100,11 +100,13 @@ describe('getKOObservables', () => {
       computedProp: mockComputed,
     };
     
-    // Mock ko methods
+    const element = document.createElement('div');
+    document.body.appendChild(element);
+
     Object.defineProperty(window, 'ko', {
       value: {
-        dataFor: jest.fn().mockReturnValue(mockData),
-        isObservable: jest.fn().mockImplementation(prop => 
+        dataFor: jest.fn().mockImplementation(el => (el === element ? mockData : null)),
+        isObservable: jest.fn().mockImplementation(prop =>
           prop === mockObservable || prop === mockObservableArray || prop === mockComputed
         ),
         isComputed: jest.fn().mockImplementation(prop => prop === mockComputed),
@@ -123,7 +125,7 @@ describe('getKOObservables', () => {
     // Restore original Array.isArray
     Array.isArray = originalIsArray;
     
-    expect(window.ko.dataFor).toHaveBeenCalledWith(window.$0);
+    expect(window.ko.dataFor).toHaveBeenCalled();
     expect(window.ko.isObservable).toHaveBeenCalledTimes(3);
     
     // Check that the result contains the observable properties
