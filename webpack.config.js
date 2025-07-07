@@ -6,9 +6,10 @@ module.exports = (env, argv) => {
 	const isProduction = argv.mode === 'production';
 
 	return {
-		entry:        {
-			devtools: './src/devtools.ts',
-		},
+                entry:        {
+                        devtools: './src/devtools.ts',
+                        sidebar: './src/sidebar.ts',
+                },
 		output:       {
 			path:     path.resolve(__dirname, 'dist'),
 			filename: '[name].js',
