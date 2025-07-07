@@ -33,64 +33,81 @@ export interface KOTrackedProperty {
 	dependencies?: string[]; // Names of observables this computed depends on
 }
 
+function getAllKODataObjects(): any[] {
+        const ko = (window as any).ko;
+        const elements = Array.from(document.querySelectorAll('*')) as Element[];
+        const dataObjects: any[] = [];
+        const seen = new Set<any>();
+
+        for (const el of elements) {
+                try {
+                        const data = ko.dataFor(el);
+                        if (data && !seen.has(data)) {
+                                seen.add(data);
+                                dataObjects.push(data);
+                        }
+                } catch (e) {
+                        // Ignore errors from elements not handled by Knockout
+                }
+        }
+
+        return dataObjects;
+}
+
 export function getKOObservables(): KOTrackedProperty[] {
-	if (!(window as any).ko || !(window as any).$0) return [];
+        if (!(window as any).ko) return [];
 
-	const data = (window as any).ko.dataFor((window as any).$0);
-	if (!data) return [];
+        const ko = (window as any).ko;
+        const dataObjects = getAllKODataObjects();
+        const result: KOTrackedProperty[] = [];
 
-	const props = Object.getOwnPropertyNames(data);
-	const ko = (window as any).ko;
-	const result: KOTrackedProperty[] = [];
-	const observableMap: Record<string, any> = {}; // Map of observable names to their objects
+        for (const data of dataObjects) {
+                const props = Object.getOwnPropertyNames(data);
+                const observableMap: Record<string, any> = {};
 
-	// First pass: collect all observables and their names
-	for (const key of props) {
-		const prop = data[key];
-		if (typeof prop === "function" && ko.isObservable(prop)) {
-			observableMap[key] = prop;
-		}
-	}
+                // First pass: collect all observables and their names
+                for (const key of props) {
+                        const prop = data[key];
+                        if (typeof prop === 'function' && ko.isObservable(prop)) {
+                                observableMap[key] = prop;
+                        }
+                }
 
-	// Second pass: create tracked properties with dependency information
-	for (const key of props) {
-		const prop = data[key];
-		if (typeof prop === "function") {
-			if (ko.isObservable(prop)) {
-				const type: KOTrackedProperty["type"] = ko.isComputed(prop)
-					? "computed"
-					: ko.isObservable(prop) && Array.isArray(prop())
-					? "observableArray"
-					: "observable";
+                // Second pass: create tracked properties with dependency information
+                for (const key of props) {
+                        const prop = data[key];
+                        if (typeof prop === 'function' && ko.isObservable(prop)) {
+                                const type: KOTrackedProperty['type'] = ko.isComputed(prop)
+                                        ? 'computed'
+                                        : ko.isObservable(prop) && Array.isArray(prop())
+                                        ? 'observableArray'
+                                        : 'observable';
 
-				const trackedProp: KOTrackedProperty = {
-					name: key,
-					type,
-					value: prop(),
-				};
+                                const trackedProp: KOTrackedProperty = {
+                                        name: key,
+                                        type,
+                                        value: prop(),
+                                };
 
-				// For computed observables, try to extract dependencies
-				if (type === "computed" && prop.getDependenciesCount && prop.getDependencies) {
-					try {
-						// Some KO versions expose dependency information
-						const dependencies = prop.getDependencies();
-						if (dependencies && Array.isArray(dependencies)) {
-							// Find the observable names by comparing with our map
-							trackedProp.dependencies = Object.keys(observableMap).filter(name => {
-								return dependencies.includes(observableMap[name]);
-							});
-						}
-					} catch (e) {
-						console.log("Could not get dependencies for computed observable:", e);
-					}
-				}
+                                if (type === 'computed' && prop.getDependenciesCount && prop.getDependencies) {
+                                        try {
+                                                const dependencies = prop.getDependencies();
+                                                if (dependencies && Array.isArray(dependencies)) {
+                                                        trackedProp.dependencies = Object.keys(observableMap).filter(name =>
+                                                                dependencies.includes(observableMap[name])
+                                                        );
+                                                }
+                                        } catch (e) {
+                                                console.log('Could not get dependencies for computed observable:', e);
+                                        }
+                                }
 
-				result.push(trackedProp);
-			}
-		}
-	}
+                                result.push(trackedProp);
+                        }
+                }
+        }
 
-	return result;
+        return result;
 }
 
 /**
@@ -100,30 +117,28 @@ export function getKOObservables(): KOTrackedProperty[] {
  * @returns A boolean indicating whether the update was successful
  */
 export function updateKOObservable(propertyName: string, newValue: any): boolean {
-	if (!(window as any).ko || !(window as any).$0) return false;
+        if (!(window as any).ko) return false;
 
-	const data = (window as any).ko.dataFor((window as any).$0);
-	if (!data) return false;
+        const ko = (window as any).ko;
+        const dataObjects = getAllKODataObjects();
 
-	// Check if the property exists and is an observable
-	if (!(propertyName in data) || typeof data[propertyName] !== "function" || 
-		!(window as any).ko.isObservable(data[propertyName])) {
-		return false;
-	}
+        for (const data of dataObjects) {
+                if (propertyName in data && typeof data[propertyName] === 'function' && ko.isObservable(data[propertyName])) {
+                        if (ko.isComputed(data[propertyName])) {
+                                return false;
+                        }
 
-	// Don't allow updating computed observables
-	if ((window as any).ko.isComputed(data[propertyName])) {
-		return false;
-	}
+                        try {
+                                data[propertyName](newValue);
+                                return true;
+                        } catch (error) {
+                                console.error(`Error updating observable ${propertyName}:`, error);
+                                return false;
+                        }
+                }
+        }
 
-	try {
-		// Update the observable value
-		data[propertyName](newValue);
-		return true;
-	} catch (error) {
-		console.error(`Error updating observable ${propertyName}:`, error);
-		return false;
-	}
+        return false;
 }
 
 /**
@@ -131,41 +146,38 @@ export function updateKOObservable(propertyName: string, newValue: any): boolean
  * @returns A function to stop monitoring
  */
 export function monitorKOObservables(): () => void {
-	if (!(window as any).ko || !(window as any).$0) return () => {};
+        if (!(window as any).ko) return () => {};
 
-	const data = (window as any).ko.dataFor((window as any).$0);
-	if (!data) return () => {};
+        const ko = (window as any).ko;
+        const dataObjects = getAllKODataObjects();
+        const subscriptions: { [key: string]: any } = {};
 
-	const ko = (window as any).ko;
-	const subscriptions: { [key: string]: any } = {};
-	const props = Object.getOwnPropertyNames(data);
+        const notifyChange = (name: string, newValue: any) => {
+                const event = new CustomEvent('knockoutObservableChanged', {
+                        detail: { name, value: newValue }
+                });
+                document.dispatchEvent(event);
+        };
 
-	// Function to notify DevTools of changes
-	const notifyChange = (name: string, newValue: any) => {
-		// Use a custom event to notify DevTools of changes
-		const event = new CustomEvent('knockoutObservableChanged', {
-			detail: { name, value: newValue }
-		});
-		document.dispatchEvent(event);
-	};
+        for (const data of dataObjects) {
+                const props = Object.getOwnPropertyNames(data);
 
-	// Subscribe to all observables
-	for (const key of props) {
-		const prop = data[key];
-		if (typeof prop === "function" && ko.isObservable(prop)) {
-			// Subscribe to changes
-			subscriptions[key] = prop.subscribe((newValue: any) => {
-				notifyChange(key, newValue);
-			});
-		}
-	}
+                for (const key of props) {
+                        const prop = data[key];
+                        if (typeof prop === 'function' && ko.isObservable(prop)) {
+                                subscriptions[key] = prop.subscribe((newValue: any) => {
+                                        notifyChange(key, newValue);
+                                });
+                        }
+                }
+        }
 
-	// Return a function to dispose all subscriptions
-	return () => {
-		Object.values(subscriptions).forEach((subscription: any) => {
-			subscription.dispose();
-		});
-	};
+        // Return a function to dispose all subscriptions
+        return () => {
+                Object.values(subscriptions).forEach((subscription: any) => {
+                        subscription.dispose();
+                });
+        };
 }
 
 /**
@@ -184,75 +196,69 @@ export interface KOPerformanceMetrics {
  * Monitors the performance of Knockout observables
  * @returns An object with performance metrics and a function to stop monitoring
  */
-export function monitorKOPerformance(): { 
-	getMetrics: () => KOPerformanceMetrics[],
-	stopMonitoring: () => void 
+export function monitorKOPerformance(): {
+        getMetrics: () => KOPerformanceMetrics[],
+        stopMonitoring: () => void
 } {
-	if (!(window as any).ko || !(window as any).$0) {
-		return { 
-			getMetrics: () => [], 
-			stopMonitoring: () => {} 
-		};
-	}
+        if (!(window as any).ko) {
+                return {
+                        getMetrics: () => [],
+                        stopMonitoring: () => {}
+                };
+        }
 
-	const data = (window as any).ko.dataFor((window as any).$0);
-	if (!data) {
-		return { 
-			getMetrics: () => [], 
-			stopMonitoring: () => {} 
-		};
-	}
+        const ko = (window as any).ko;
+        const dataObjects = getAllKODataObjects();
+        const metrics: Record<string, KOPerformanceMetrics> = {};
+        const originalFunctionsMap = new Map<any, Record<string, Function>>();
 
-	const ko = (window as any).ko;
-	const props = Object.getOwnPropertyNames(data);
-	const metrics: Record<string, KOPerformanceMetrics> = {};
-	const originalFunctions: Record<string, Function> = {};
+        for (const data of dataObjects) {
+                const props = Object.getOwnPropertyNames(data);
+                const originalFunctions: Record<string, Function> = {};
+                for (const key of props) {
+                        const prop = data[key];
+                        if (typeof prop === 'function' && ko.isObservable(prop)) {
+                                const type: 'observable' | 'observableArray' | 'computed' = ko.isComputed(prop)
+                                        ? 'computed'
+                                        : ko.isObservable(prop) && Array.isArray(prop())
+                                        ? 'observableArray'
+                                        : 'observable';
 
-	// Initialize metrics for all observables
-	for (const key of props) {
-		const prop = data[key];
-		if (typeof prop === "function" && ko.isObservable(prop)) {
-			const type: "observable" | "observableArray" | "computed" = ko.isComputed(prop)
-				? "computed"
-				: ko.isObservable(prop) && Array.isArray(prop())
-				? "observableArray"
-				: "observable";
+                                metrics[key] = {
+                                        name: key,
+                                        type,
+                                        evaluationCount: 0,
+                                        lastEvaluationTime: 0,
+                                        averageEvaluationTime: 0,
+                                        totalEvaluationTime: 0
+                                };
 
-			metrics[key] = {
-				name: key,
-				type,
-				evaluationCount: 0,
-				lastEvaluationTime: 0,
-				averageEvaluationTime: 0,
-				totalEvaluationTime: 0
-			};
+                                if (type === 'computed' || type === 'observableArray') {
+                                        originalFunctions[key] = prop.peek || prop;
 
-			// Only instrument computed observables and observable arrays
-			// (regular observables don't have evaluation logic)
-			if (type === "computed" || type === "observableArray") {
-				// Save the original function
-				originalFunctions[key] = prop.peek || prop;
+                                        const originalFn = prop.peek || prop;
+                                        prop.peek = function() {
+                                                const startTime = performance.now();
+                                                const result = originalFn.apply(this, arguments);
+                                                const endTime = performance.now();
+                                                const executionTime = endTime - startTime;
 
-				// Monkey patch the function to measure performance
-				const originalFn = prop.peek || prop;
-				prop.peek = function() {
-					const startTime = performance.now();
-					const result = originalFn.apply(this, arguments);
-					const endTime = performance.now();
-					const executionTime = endTime - startTime;
+                                                // Update metrics
+                                                metrics[key].evaluationCount++;
+                                                metrics[key].lastEvaluationTime = executionTime;
+                                                metrics[key].totalEvaluationTime += executionTime;
+                                                metrics[key].averageEvaluationTime =
+                                                        metrics[key].totalEvaluationTime / metrics[key].evaluationCount;
 
-					// Update metrics
-					metrics[key].evaluationCount++;
-					metrics[key].lastEvaluationTime = executionTime;
-					metrics[key].totalEvaluationTime += executionTime;
-					metrics[key].averageEvaluationTime = 
-						metrics[key].totalEvaluationTime / metrics[key].evaluationCount;
-
-					return result;
-				};
-			}
-		}
-	}
+                                                return result;
+                                        };
+                                }
+                        }
+                }
+                if (Object.keys(originalFunctions).length > 0) {
+                        originalFunctionsMap.set(data, originalFunctions);
+                }
+        }
 
 	// Function to get current metrics
 	const getMetrics = (): KOPerformanceMetrics[] => {
@@ -261,11 +267,13 @@ export function monitorKOPerformance(): {
 
 	// Function to stop monitoring and restore original functions
 	const stopMonitoring = () => {
-		for (const key in originalFunctions) {
-			if (data[key] && typeof data[key] === "function") {
-				data[key].peek = originalFunctions[key];
-			}
-		}
+                for (const [obj, originals] of originalFunctionsMap.entries()) {
+                        for (const key in originals) {
+                                if (obj[key] && typeof obj[key] === 'function') {
+                                        obj[key].peek = originals[key];
+                                }
+                        }
+                }
 	};
 
 	return { getMetrics, stopMonitoring };
