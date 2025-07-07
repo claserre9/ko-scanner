@@ -111,6 +111,22 @@ export function getKOObservables(): KOTrackedProperty[] {
 }
 
 /**
+ * Returns the constructor names of all Knockout view models on the page.
+ */
+export function getKOViewModelNames(): string[] {
+        if (!(window as any).ko) return [];
+
+        const dataObjects = getAllKODataObjects();
+        const names = dataObjects.map(obj => {
+                const ctor = obj && obj.constructor;
+                return ctor && ctor.name ? ctor.name : 'ViewModel';
+        });
+
+        // Remove duplicates while preserving order
+        return Array.from(new Set(names));
+}
+
+/**
  * Updates the value of a Knockout observable in the inspected page
  * @param propertyName The name of the observable property to update
  * @param newValue The new value to set

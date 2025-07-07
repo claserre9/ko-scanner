@@ -1,4 +1,4 @@
-import { getKOObservables, KOTrackedProperty, updateKOObservable, monitorKOObservables, monitorKOPerformance, KOPerformanceMetrics } from "./core";
+import { getKOObservables, getKOViewModelNames, KOTrackedProperty, updateKOObservable, monitorKOObservables, monitorKOPerformance, KOPerformanceMetrics } from "./core";
 import { getCurrentLocale, getMessages, LocaleMessages, setCurrentLocale, LocaleCode } from "./locales";
 import { loadSettings, saveSettings, updateSetting, applyTheme, formatData, Settings } from "./settings";
 
@@ -12,6 +12,31 @@ let userSettings = loadSettings();
 // Store the current list of observables
 let currentObservables: KOTrackedProperty[] = [];
 let filteredObservables: KOTrackedProperty[] = [];
+
+function renderViewModels(names: string[]): void {
+        const container = document.getElementById("viewModelList")!;
+        container.innerHTML = "";
+        container.className = "";
+
+        if (names.length === 0) {
+                container.className = "message";
+                container.textContent = messages.noViewModelsFound;
+                return;
+        }
+
+        const title = document.createElement("div");
+        title.className = "observable-name";
+        title.textContent = messages.viewModelsFound;
+        container.appendChild(title);
+
+        const ul = document.createElement("ul");
+        for (const name of names) {
+                const li = document.createElement("li");
+                li.textContent = name;
+                ul.appendChild(li);
+        }
+        container.appendChild(ul);
+}
 
 function renderProperties(properties: KOTrackedProperty[]): void {
 	const container = document.getElementById("observableList")!;
@@ -188,27 +213,38 @@ function fetchAndRender(): void {
 	// Stop any existing monitoring before fetching new observables
 	stopObservableMonitoring();
 
-	chrome.devtools.inspectedWindow.eval(
-		`(${getKOObservables.toString()})()`,
-		(result: KOTrackedProperty[] | undefined, exceptionInfo) => {
-			if (!exceptionInfo && result) {
-				// Store the current observables
-				currentObservables = result;
+        chrome.devtools.inspectedWindow.eval(
+                `(${getKOObservables.toString()})()`,
+                (result: KOTrackedProperty[] | undefined, exceptionInfo) => {
+                        if (!exceptionInfo && result) {
+                                // Store the current observables
+                                currentObservables = result;
 
-				// Apply any active filters
-				filterObservables();
+                                // Apply any active filters
+                                filterObservables();
 
-				// Start real-time monitoring if enabled in settings
-				if (userSettings.realTimeMonitoring) {
-					startObservableMonitoring();
-				}
-			} else {
-				const container = document.getElementById("observableList")!;
-				container.className = "message";
-				container.innerHTML = `<p>${messages.errorInspectingViewModel}</p>`;
-			}
-		}
-	);
+                                // Fetch and render view model names
+                                chrome.devtools.inspectedWindow.eval(
+                                        `(${getKOViewModelNames.toString()})()`,
+                                        (names: string[] | undefined) => {
+                                                renderViewModels(names || []);
+                                        }
+                                );
+
+                                // Start real-time monitoring if enabled in settings
+                                if (userSettings.realTimeMonitoring) {
+                                        startObservableMonitoring();
+                                }
+                        } else {
+                                const container = document.getElementById("observableList")!;
+                                container.className = "message";
+                                container.innerHTML = `<p>${messages.errorInspectingViewModel}</p>`;
+
+                                // Clear view model list
+                                renderViewModels([]);
+                        }
+                }
+        );
 }
 
 /**

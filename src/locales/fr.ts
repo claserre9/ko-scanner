@@ -8,6 +8,8 @@ export const messages = {
   noObservablesFound: "Aucune observable trouvée.",
   errorInspectingViewModel: "Erreur lors de l'inspection du viewModel.",
   selectionChangeDetected: "Changement de sélection détecté",
+  viewModelsFound: "ViewModels trouvés :",
+  noViewModelsFound: "Aucun ViewModel Knockout détecté.",
 
   // Observable properties
   observableName: "Nom",
