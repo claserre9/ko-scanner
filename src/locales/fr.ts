@@ -13,6 +13,13 @@ export const messages = {
   observableName: "Nom",
   observableType: "Type",
   observableValue: "Valeur",
+  dependencies: "Dépendances",
+  edit: "Modifier",
+  searchPlaceholder: "Rechercher des observables...",
+  filterAll: "Tous les types",
+  filterObservable: "Observable",
+  filterObservableArray: "Tableau observable",
+  filterComputed: "Calculé",
 
   // Settings
   settings: "Paramètres",
@@ -25,7 +32,14 @@ export const messages = {
   dataFormatPretty: "Détaillé",
   showTypes: "Afficher les types",
   autoRefresh: "Actualisation automatique",
+  realTimeMonitoring: "Surveillance en temps réel",
   language: "Langue",
   saveSettings: "Enregistrer les paramètres",
   settingsSaved: "Paramètres enregistrés avec succès !",
+  errorUpdatingObservable: "Erreur lors de la mise à jour de l'observable",
+  observableUpdated: "Observable mise à jour avec succès",
+  editArray: "Modifier le tableau",
+  cancel: "Annuler",
+  save: "Enregistrer",
+  invalidArrayFormat: "Format de tableau invalide. Veuillez entrer un tableau JSON valide.",
 };
