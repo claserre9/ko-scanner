@@ -510,8 +510,8 @@ function saveUserSettings(): void {
 // Auto-refresh interval ID
 let autoRefreshIntervalId: number | null = null;
 
-// Function to dispose observable monitoring
-let disposeMonitoring: (() => void) | null = null;
+// Flag to indicate whether monitoring is active in the inspected window
+let monitoringActive = false;
 
 /**
  * Start or stop auto-refresh based on settings
@@ -535,46 +535,48 @@ function updateAutoRefresh(): void {
  * Start monitoring observable changes in real-time
  */
 function startObservableMonitoring(): void {
-	// Stop any existing monitoring
-	stopObservableMonitoring();
+        // Stop any existing monitoring
+        stopObservableMonitoring();
 
-	// Start monitoring in the inspected window
-	chrome.devtools.inspectedWindow.eval(
-		`(${monitorKOObservables.toString()})()`,
-		(result, exceptionInfo) => {
-			if (exceptionInfo) {
-				console.error("Error starting observable monitoring:", exceptionInfo);
-			} else {
-				console.log("Observable monitoring started");
+        // Inject monitoring code into the inspected window and store the dispose function
+        const expression = `window.__koScannerDisposeMonitoring = (${monitorKOObservables.toString()})(); true;`;
+        chrome.devtools.inspectedWindow.eval(
+                expression,
+                (result, exceptionInfo) => {
+                        if (exceptionInfo) {
+                                console.error("Error starting observable monitoring:", exceptionInfo);
+                        } else {
+                                monitoringActive = true;
+                                console.log("Observable monitoring started");
 
-				// Set up event listener for observable changes
-				document.addEventListener("knockoutObservableChanged", handleObservableChange);
-			}
-		}
-	);
+                                // Set up event listener for observable changes
+                                document.addEventListener("knockoutObservableChanged", handleObservableChange);
+                        }
+                }
+        );
 }
 
 /**
  * Stop monitoring observable changes
  */
 function stopObservableMonitoring(): void {
-	// Remove event listener
-	document.removeEventListener("knockoutObservableChanged", handleObservableChange);
+        // Remove event listener
+        document.removeEventListener("knockoutObservableChanged", handleObservableChange);
 
-	// Dispose monitoring in the inspected window
-	if (disposeMonitoring) {
-		chrome.devtools.inspectedWindow.eval(
-			`(${disposeMonitoring.toString()})()`,
-			(result, exceptionInfo) => {
-				if (exceptionInfo) {
-					console.error("Error stopping observable monitoring:", exceptionInfo);
-				} else {
-					console.log("Observable monitoring stopped");
-				}
-			}
-		);
-		disposeMonitoring = null;
-	}
+        if (monitoringActive) {
+                const expression = `if (window.__koScannerDisposeMonitoring) { window.__koScannerDisposeMonitoring(); window.__koScannerDisposeMonitoring = null; } true;`;
+                chrome.devtools.inspectedWindow.eval(
+                        expression,
+                        (result, exceptionInfo) => {
+                                if (exceptionInfo) {
+                                        console.error("Error stopping observable monitoring:", exceptionInfo);
+                                } else {
+                                        console.log("Observable monitoring stopped");
+                                }
+                        }
+                );
+                monitoringActive = false;
+        }
 }
 
 /**
