@@ -13,6 +13,13 @@ export const messages = {
   observableName: "Name",
   observableType: "Type",
   observableValue: "Value",
+  dependencies: "Dependencies",
+  edit: "Edit",
+  searchPlaceholder: "Search observables...",
+  filterAll: "All types",
+  filterObservable: "Observable",
+  filterObservableArray: "Observable Array",
+  filterComputed: "Computed",
 
   // Settings
   settings: "Settings",
@@ -25,7 +32,14 @@ export const messages = {
   dataFormatPretty: "Pretty",
   showTypes: "Show Types",
   autoRefresh: "Auto-refresh",
+  realTimeMonitoring: "Real-time monitoring",
   language: "Language",
   saveSettings: "Save Settings",
   settingsSaved: "Settings saved successfully!",
+  errorUpdatingObservable: "Error updating observable",
+  observableUpdated: "Observable updated successfully",
+  editArray: "Edit Array",
+  cancel: "Cancel",
+  save: "Save",
+  invalidArrayFormat: "Invalid array format. Please enter a valid JSON array.",
 };
