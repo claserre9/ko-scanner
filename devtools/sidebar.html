@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>KnockoutJS Context</title>
+<style>
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 10px;
+    background-color: #f9f9f9;
+    color: #333;
+}
+.section {
+    margin-bottom: 12px;
+}
+h2 {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+}
+pre {
+    background: #fff;
+    border: 1px solid #ccc;
+    padding: 8px;
+    overflow: auto;
+    white-space: pre-wrap;
+}
+.copy-btn {
+    margin-left: 6px;
+    font-size: 11px;
+    padding: 2px 6px;
+}
+</style>
+</head>
+<body>
+<div class="section">
+  <h2>View Model <button class="copy-btn" data-target="view-model">Copy</button></h2>
+  <pre id="view-model"></pre>
+</div>
+<div class="section">
+  <h2>Context <button class="copy-btn" data-target="context">Copy</button></h2>
+  <pre id="context"></pre>
+</div>
+<script src="/dist/sidebar.js"></script>
+</body>
+</html>
