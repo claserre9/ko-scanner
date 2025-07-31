@@ -7,7 +7,8 @@ import { KOData, KOContext, KOViewModel } from './interfaces';
  * @returns The unwrapped value, or an object indicating a computed property.
  */
 function unwrapKOValue(value: unknown): unknown {
-    if ((window as any).ko && (ko as any).isObservable(value)) {
+    const koRef = (window as any).ko;
+    if (koRef && (koRef as any).isObservable(value)) {
         const observable: any = value;
         let unwrapped = typeof observable.peek === 'function' ? observable.peek() : observable();
 
@@ -15,7 +16,7 @@ function unwrapKOValue(value: unknown): unknown {
             unwrapped = unwrapped.slice();
         }
 
-        if ((ko as any).isComputed(observable)) {
+        if ((koRef as any).isComputed(observable)) {
             return { computed: unwrapped };
         }
 
@@ -30,9 +31,10 @@ function unwrapKOValue(value: unknown): unknown {
  * @returns Object containing the view model data and context.
  */
 export function getKODataAndContext(): KOData {
-    if ((window as any).ko) {
-        let data = (window as any).ko && ($0 as any) ? (ko as any).dataFor($0) : {};
-        let context = (window as any).ko && ($0 as any) ? (ko as any).contextFor($0) : {};
+    const koRef = (window as any).ko;
+    if (koRef) {
+        let data = ($0 as any) ? (koRef as any).dataFor($0) : {};
+        let context = ($0 as any) ? (koRef as any).contextFor($0) : {};
 
         if (data === null || data === undefined) {
             data = {};
